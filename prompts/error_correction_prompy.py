@@ -62,9 +62,9 @@ class EvaAIDataFrame(pd.DataFrame):
     
         
     def initialize_middleware(self):
-        self.llm_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key="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"), \
+        self.llm_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key="<KEY>"), \
                                         self.pd_df, verbose=False)
-        openai.api_key = "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"
+        openai.api_key = "<KEY>"
         self.openai_model = "text-davinci-003"
         return
     
