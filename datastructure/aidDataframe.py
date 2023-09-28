@@ -9,7 +9,7 @@ from prompts.error_correction_prompt import ErrorCorrectionPrompt
 from config import Config
 
 
-class EvaAIDataFrame(pd.DataFrame):
+class AIDataFrame(pd.DataFrame):
     def __init__(self, df, config=None, description=None, name=None) -> None:
         super().__init__(df)
 
@@ -87,11 +87,9 @@ class EvaAIDataFrame(pd.DataFrame):
         answer = response.choices[0].text
 
         return answer
-        
-        
 
     def chat(self, prompt):
-        ans = self.agent.run(prompt)
+        ans = self.llm_agent.run(prompt)
         return ans
 
         
