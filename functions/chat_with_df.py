@@ -11,14 +11,13 @@ from datastructure.aidDataframe import AIDataFrame
 
 class ChatWithPandas(AbstractFunction):
 
-
     @setup(cacheable=False, function_type="FeatureExtraction", batchable=False)
     def setup(self):
         pass
 
     @property
     def name(self) -> str:
-        return "SentenceTransformerFeatureExtractor"
+        return "ChatWithPandas"
 
     @forward(
         input_signatures=[
@@ -39,13 +38,20 @@ class ChatWithPandas(AbstractFunction):
     )
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
         
-        query = df[0][0]
-        req_df = df.drop([0], axis=1)
+        query = df.iloc[0,1]
+        type = df.iloc[0,0]
+        
+        req_df = df.drop([0,0], axis=1)
         
         smart_df = AIDataFrame(req_df, description="A dataframe about cars")
         smart_df.initialize_middleware()
 
-        response = smart_df.chat(query)
+        if type == "query":
+            response = smart_df.query_dataframe(query)
+        elif type == "plot":
+            response = smart_df.plot_dataframe(query)
+        elif type == "manipulation":
+            response = smart_df.manipulate_dataframe(query)
         
         df_dict = {"response": [response]}
         
