@@ -60,6 +60,8 @@ class AIDataFrame(pd.DataFrame):
     
         
     def initialize_middleware(self):
+        """ Initializes openai api with the openai key and model """
+
         open_ai_key = self.config.get_open_ai_key()
         openai.api_key = open_ai_key
         self.openai_model = "gpt-3.5-turbo"
@@ -116,7 +118,18 @@ class AIDataFrame(pd.DataFrame):
 
 
 
-    def execute_python(self, python_code, type: str):
+    def execute_python(self, python_code: str, type: str):
+        """
+         A function to execute the python code and return result. 
+         
+         Args
+         python_code - the python code to be executed. It is in string format.
+         type - type of function to be executed. query | plot | manipulation
+         
+         Returns
+         Return the result of the execution.
+        """
+
         if type=="query":
             with open("tmp.py", "w+") as file:
                 file.write(python_code)
@@ -151,7 +164,15 @@ class AIDataFrame(pd.DataFrame):
             return output
             
 
-    def query_dataframe(self, query):
+    def query_dataframe(self, query: str):
+        """A function used by user to query and get some values from the dataframe.
+
+        Args:
+            query (str): User query
+
+        Returns:
+            A string format with the required answer
+        """
         prompt = self.create_query_prompt(query)
         
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
@@ -163,8 +184,17 @@ class AIDataFrame(pd.DataFrame):
 
         return f"Question is {query} and Answer is {answer}"
     
-    def plot_dataframe(self, query):
-        prompt = self.create_plot_prompt(query)
+    def plot_dataframe(self, plot_query: str):
+        """A function used by user to plot images using the data in the dataframe.
+
+        Args:
+            plot_query (str): User's request for the plot
+
+        Returns:
+            A string format with the location of the generated image
+        """
+        
+        prompt = self.create_plot_prompt(plot_query)
         
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \
@@ -176,8 +206,17 @@ class AIDataFrame(pd.DataFrame):
         return f"please find the plot in the file plot.png"
     
 
-    def manipulate_dataframe(self, query):
-        prompt = self.create_manipulation_prompt(query)
+    def manipulate_dataframe(self, manipulation_query):
+        """A function used by user to manipulate the dataframe.
+
+        Args:
+            manipulation_query (str): User's request for the manipulation
+
+        Returns:
+            Pandas dataframe with the output after manipulation.
+        """
+        
+        prompt = self.create_manipulation_prompt(manipulation_query)
         
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \

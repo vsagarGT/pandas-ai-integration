@@ -24,15 +24,15 @@ class ChatWithPandas(AbstractFunction):
             PandasDataframe(
                 columns=["data"],
                 column_types=[NdArrayType.STR],
-                column_shapes=[(1)],
+                column_shapes=[(None, 3)],
             ),
 
         ],
         output_signatures=[
             PandasDataframe(
                 columns=["response"],
-                column_types=[NdArrayType.FLOAT32],
-                column_shapes=[(1, 384)],
+                column_types=[NdArrayType.STR],
+                column_shapes=[(None,)],
             )
         ],
     )
