@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import evadb
 
@@ -41,10 +40,10 @@ cursor.query(load_data_query).execute()
 
 print("loaded data")
 
-chat_query1 = f""" SELECT ChatWithPandas('query', 'what is the mean of the gear column',gear, name) FROM CARSDATA;
-"""
-result1 = cursor.query(chat_query1).execute()
-print(result1)
+# chat_query1 = f""" SELECT ChatWithPandas('query', 'what is the mean of the gear column',gear, name) FROM CARSDATA;
+# """
+# result1 = cursor.query(chat_query1).execute()
+# print(result1)
 
 # chat_query2 = f""" SELECT ChatWithPandas('plot', 'plot a bar graph of mpg vs hp',mpg, hp) FROM CARSDATA;
 # """
@@ -57,12 +56,12 @@ print(result1)
 # result3 = cursor.query(chat_query3).execute()
 # print(result3)
 
-# chat_query4 = f""" SELECT ChatWithPandas('cleaning',\
-#       'impute null values with average of the column if an integer or float. replace with an empty string if column is a string.\
-#         remove duplicate rows.', \
-#             id, name, mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb) FROM CARSDATA;
-# """
-# result4 = cursor.query(chat_query4).execute()
-# print(result4)
+chat_query4 = f""" SELECT ChatWithPandas('cleaning',\
+      'impute null values with average of the column if an integer or float. replace with an empty string if column is a string.\
+        remove duplicate rows.', \
+            id, name, mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb) FROM CARSDATA;
+"""
+result4 = cursor.query(chat_query4).execute()
+print(result4)
 
 
