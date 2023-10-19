@@ -46,7 +46,6 @@ chat_query1 = f""" SELECT ChatWithPandas('query', 'what is the mean of the gear 
 result1 = cursor.query(chat_query1).execute()
 print(result1)
 
-
 # chat_query2 = f""" SELECT ChatWithPandas('plot', 'plot a bar graph of mpg vs hp',mpg, hp) FROM CARSDATA;
 # """
 # result2 = cursor.query(chat_query2).execute()
@@ -57,5 +56,13 @@ print(result1)
 # """
 # result3 = cursor.query(chat_query3).execute()
 # print(result3)
+
+# chat_query4 = f""" SELECT ChatWithPandas('cleaning',\
+#       'impute null values with average of the column if an integer or float. replace with an empty string if column is a string.\
+#         remove duplicate rows.', \
+#             id, name, mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb) FROM CARSDATA;
+# """
+# result4 = cursor.query(chat_query4).execute()
+# print(result4)
 
 

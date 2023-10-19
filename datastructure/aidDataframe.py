@@ -28,9 +28,6 @@ class AIDataFrame(pd.DataFrame):
         #set name
         self.name = name
 
-        #setup cache
-        self.cache = {}
-
     @property
     def col_count(self):
         if self.is_df_loaded:
@@ -53,10 +50,6 @@ class AIDataFrame(pd.DataFrame):
     
     def to_csv(self, file_path):
         self.pd_df.to_csv(file_path)
-    
-
-    def clear_cache(self):
-        self.cache = {}
     
         
     def initialize_middleware(self):
@@ -116,6 +109,20 @@ class AIDataFrame(pd.DataFrame):
         prompt = re.sub(' +', ' ', prompt)
         return prompt
 
+    def create_data_cleaning_prompt(self, clean_query: str):
+        prompt = f"I need you to write a python3.8 program for the following dataframe. \
+            You are given the following pandas dataframe. \
+            The dataframe has {self.col_count} columns. The columns are {list(self.columns)}. \
+            The first 2 rows of data in the csv format are {self.iloc[0:2].to_csv()} .\
+            Give me the python code to perform the following data cleaning: {clean_query}.\
+            Write this code in a function named 'pandas_clean_function' and it should take the pandas dataframe as input. \
+            Do not create a new dataframe. assume that it is given as input to the function.\
+            The output should be the dataframe after the cleaning are done.\
+            Add the required imports for the function. \
+            Do not add any code for example usage to execute the function. Write only the function code.\
+            The response should have only the python code and no additional text. \
+            I repeat.. give the python code only for the function. NO ADDITIONAL CODE."
+        return prompt
 
 
     def execute_python(self, python_code: str, type: str):
@@ -145,6 +152,7 @@ class AIDataFrame(pd.DataFrame):
         elif type == "plot":
             with open("tmp.py", "w+") as file:
                 file.write(python_code)
+            
             from tmp import pandas_plot_function
             pandas_plot_function(self.pd_df)
 
@@ -156,12 +164,24 @@ class AIDataFrame(pd.DataFrame):
         elif type == "manipulation":
             with open("tmp.py", "w+") as file:
                 file.write(python_code)
+            
             from tmp import pandas_manipulation_function
             output  = pandas_manipulation_function(self.pd_df)
             
             os.remove("tmp.py")
             
             return output
+        
+        elif type == "data_cleaning":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
+            
+            from tmp import pandas_clean_function
+            output  = pandas_clean_function(self.pd_df)
+
+            os.remove("tmp.py")
+            return output
+
             
 
     def query_dataframe(self, query: str):
@@ -227,6 +247,20 @@ class AIDataFrame(pd.DataFrame):
         answer = self.execute_python(python_code, "manipulation")
 
         return answer
+    
+    def clean_dataframe(self, clean_instructions):
+        prompt = self.create_data_cleaning_prompt(clean_instructions)
+
+        completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
+                                                  temperature=0.2, \
+                                                  messages=[{"role": "user", "content": prompt}])
+        
+        python_code = completion.choices[0].message.content
+        answer = self.execute_python(python_code, "data_cleaning")
+        return answer
+
+
+
 
     
     
