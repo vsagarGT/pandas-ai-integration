@@ -56,7 +56,7 @@ class AIDataFrame(pd.DataFrame):
         """ Initializes openai api with the openai key and model """
 
         open_ai_key = self.config.get_open_ai_key()
-        openai.api_key = open_ai_key
+        
         self.openai_model = "gpt-3.5-turbo"
         return
     
@@ -123,6 +123,20 @@ class AIDataFrame(pd.DataFrame):
             The response should have only the python code and no additional text. \
             I repeat.. give the python code only for the function. NO ADDITIONAL CODE."
         return prompt
+    
+    def create_image_analysis_prompt(self, image_query: str):
+        prompt = f"I need you to write a python3.8 program for the following dataframe. \
+            You are given the following pandas dataframe. \
+            The dataframe has {self.col_count} columns. The columns are {list(self.columns)}. \
+            The first 2 rows of data in the csv format are {self.iloc[0:2].to_csv()} .\
+            Give me the python code to perform the following data cleaning: {image_query}.\
+            Write this code in a function named 'pandas_clean_function' and it should take the pandas dataframe as input. \
+            Do not create a new dataframe. assume that it is given as input to the function.\
+            The output should be the dataframe after the cleaning are done.\
+            Add the required imports for the function. \
+            Do not add any code for example usage to execute the function. Write only the function code.\
+            The response should have only the python code and no additional text. \
+            I repeat.. give the python code only for the function. NO ADDITIONAL CODE."
 
 
     def execute_python(self, python_code: str, type: str):
@@ -181,89 +195,80 @@ class AIDataFrame(pd.DataFrame):
 
             os.remove("tmp.py")
             return output
-
+        elif type == "image_analysis":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
             
-
+            from tmp import pandas_clean_function
+            output  = pandas_clean_function(self.pd_df)
+            os.remove("tmp.py")
+            return output
+            
     def query_dataframe(self, query: str):
         """A function used by user to query and get some values from the dataframe.
-
         Args:
             query (str): User query
-
         Returns:
             A string format with the required answer
         """
         prompt = self.create_query_prompt(query)
-        
+
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \
                                                   messages=[{"role": "user", "content": prompt}])
-        
+
         python_code = completion.choices[0].message.content
         answer = self.execute_python(python_code, "query")
 
         return f"Question is {query} and Answer is {answer}"
-    
+
     def plot_dataframe(self, plot_query: str):
         """A function used by user to plot images using the data in the dataframe.
-
         Args:
             plot_query (str): User's request for the plot
-
         Returns:
             A string format with the location of the generated image
         """
-        
+
         prompt = self.create_plot_prompt(plot_query)
-        
+
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \
                                                   messages=[{"role": "user", "content": prompt}])
-        
+
         python_code = completion.choices[0].message.content
         self.execute_python(python_code, "plot")
 
         return f"please find the plot in the file plot.png"
-    
+
 
     def manipulate_dataframe(self, manipulation_query):
         """A function used by user to manipulate the dataframe.
-
         Args:
             manipulation_query (str): User's request for the manipulation
-
         Returns:
             Pandas dataframe with the output after manipulation.
         """
-        
+
         prompt = self.create_manipulation_prompt(manipulation_query)
-        
+
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \
                                                   messages=[{"role": "user", "content": prompt}])
-        
+
         python_code = completion.choices[0].message.content
         print(python_code)
         answer = self.execute_python(python_code, "manipulation")
 
         return answer
-    
+
     def clean_dataframe(self, clean_instructions):
         prompt = self.create_data_cleaning_prompt(clean_instructions)
 
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", \
                                                   temperature=0.2, \
                                                   messages=[{"role": "user", "content": prompt}])
-        
+
         python_code = completion.choices[0].message.content
         answer = self.execute_python(python_code, "data_cleaning")
         return answer
-
-
-
-
-    
-    
-    
-
-
