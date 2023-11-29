@@ -82,12 +82,12 @@ class AIDataFrame(pd.DataFrame):
         prompt = re.sub(' +', ' ', prompt)
         return prompt
     
-    def create_plot_prompt(self, plot_req: str):
+    def create_plot_prompt(self, plot_req: str, plot_type: str):
         prompt = f"I need you to write a python3.8 program for the following dataframe. \
             You are given the following pandas dataframe. \
             The dataframe has {self.col_count} columns. The columns are {list(self.columns)}. \
             The first 2 rows of data in the csv format are {self.iloc[0:2].to_csv()} .\
-            Give me the python code to create the following plot: {plot_req}.\
+            Give me the python code to create the following plot: {plot_req}. It is in the form of a {plot_type}. \
             Write this code in a function named 'pandas_plot_function' and it should take the pandas dataframe as input. \
             Do not create a new dataframe. assume that it is given as input to the function.\
             Save the output plot to a file named plot.png. do not return anything.\
@@ -144,7 +144,7 @@ class AIDataFrame(pd.DataFrame):
             I repeat.. give the python code only for the function. NO ADDITIONAL CODE."
 
 
-    def execute_python(self, python_code: str, type: str):
+    def execute_python(self, python_code: str, type: str, plot_type: str):
         """
          A function to execute the python code and return result. 
          
@@ -171,7 +171,41 @@ class AIDataFrame(pd.DataFrame):
         elif type == "plot":
             with open("tmp.py", "w+") as file:
                 file.write(python_code)
-            
+             # Check if the response is an answer.
+            if plot_type == "answer":
+                with open("tmp.py", "w+") as file:
+                    file.write(python_code)
+                from tmp import pandas_clean_function
+                output  = pandas_clean_function(self.pd_df)
+                os.remove("tmp.py")
+                return output
+            # Check if the response is a bar chart.
+            elif plot_type == "bar":
+                with open("tmp.py", "w+") as file:
+                    file.write(python_code)
+                data = file["bar"]
+                df = pd.DataFrame(data)
+                df.set_index("columns", inplace=True)
+                st.bar_chart(df)
+
+            # Check if the response is a line chart.
+            elif plot_type == "line":
+                with open("tmp.py", "w+") as file:
+                    file.write(python_code)
+                data = file["line"]
+                df = pd.DataFrame(data)
+                df.set_index("columns", inplace=True)
+                st.line_chart(df)
+
+            # Check if the response is a table.
+            elif plot_type == "table":
+                with open("tmp.py", "w+") as file:
+                    file.write(python_code)
+                data = file["bar"]
+                df = pd.DataFrame(data)
+                df.set_index("columns", inplace=True)
+                st.table(df)
+                
             from tmp import pandas_plot_function
             pandas_plot_function(self.pd_df)
 
@@ -208,41 +242,6 @@ class AIDataFrame(pd.DataFrame):
             output  = pandas_clean_function(self.pd_df)
             os.remove("tmp.py")
             return output
-         # Check if the response is an answer.
-        elif type == "answer":
-            with open("tmp.py", "w+") as file:
-                file.write(python_code)
-            from tmp import pandas_clean_function
-            output  = pandas_clean_function(self.pd_df)
-            os.remove("tmp.py")
-            return output
-        # Check if the response is a bar chart.
-        elif type == "bar":
-            with open("tmp.py", "w+") as file:
-                file.write(python_code)
-            data = file["bar"]
-            df = pd.DataFrame(data)
-            df.set_index("columns", inplace=True)
-            st.bar_chart(df)
-
-        # Check if the response is a line chart.
-        if type == "line":
-            with open("tmp.py", "w+") as file:
-                file.write(python_code)
-            data = file["line"]
-            df = pd.DataFrame(data)
-            df.set_index("columns", inplace=True)
-            st.line_chart(df)
-
-        # Check if the response is a table.
-        if type == "table":
-            with open("tmp.py", "w+") as file:
-                file.write(python_code)
-            data = file["bar"]
-            df = pd.DataFrame(data)
-            df.set_index("columns", inplace=True)
-            st.table(df)
-            
     def query_dataframe(self, query: str):
         """A function used by user to query and get some values from the dataframe.
         Args:

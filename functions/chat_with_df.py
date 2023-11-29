@@ -58,7 +58,8 @@ class ChatWithPandas(AbstractFunction):
         if type == "query":
             response = smart_df.query_dataframe(query)
         elif type == "plot":
-            response = smart_df.plot_dataframe(query)
+            plot_type = df.iloc[0,2]
+            response = smart_df.plot_dataframe(query, plot_type)
         elif type == "manipulation":
             response = smart_df.manipulate_dataframe(query)
         
