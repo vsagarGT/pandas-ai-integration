@@ -3,6 +3,11 @@ import openai
 from config import Config
 import re
 import os
+import streamlit as st
+import json
+import evadb
+from typing import Dict, List
+import shutil
 
 
 class AIDataFrame(pd.DataFrame):
@@ -203,6 +208,40 @@ class AIDataFrame(pd.DataFrame):
             output  = pandas_clean_function(self.pd_df)
             os.remove("tmp.py")
             return output
+         # Check if the response is an answer.
+        elif type == "answer":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
+            from tmp import pandas_clean_function
+            output  = pandas_clean_function(self.pd_df)
+            os.remove("tmp.py")
+            return output
+        # Check if the response is a bar chart.
+        elif type == "bar":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
+            data = file["bar"]
+            df = pd.DataFrame(data)
+            df.set_index("columns", inplace=True)
+            st.bar_chart(df)
+
+        # Check if the response is a line chart.
+        if type == "line":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
+            data = file["line"]
+            df = pd.DataFrame(data)
+            df.set_index("columns", inplace=True)
+            st.line_chart(df)
+
+        # Check if the response is a table.
+        if type == "table":
+            with open("tmp.py", "w+") as file:
+                file.write(python_code)
+            data = file["bar"]
+            df = pd.DataFrame(data)
+            df.set_index("columns", inplace=True)
+            st.table(df)
             
     def query_dataframe(self, query: str):
         """A function used by user to query and get some values from the dataframe.
